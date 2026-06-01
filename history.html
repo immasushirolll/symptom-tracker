@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}My History{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>📖 My History</h1>
+  <p class="subtitle">All your past check-ins, saved right here on your computer.</p>
+</div>
+
+<div id="loadingMsg" class="card text-center" style="color:var(--text-muted); font-size:1.1rem;">
+  ⏳ Loading your recordings...
+</div>
+
+<div id="emptyMsg" class="card text-center hidden" style="padding:3rem 2rem;">
+  <div style="font-size:3.5rem; margin-bottom:1rem;">📭</div>
+  <h2>No recordings yet</h2>
+  <p class="text-muted">You haven't done a check-in yet. Your first one is just a tap away!</p>
+  <a href="/checkin" class="btn btn-primary btn-lg mt-2">🎙️ Do My First Check-In</a>
+</div>
+
+<div id="statsBar" class="card hidden mb-2" style="background:var(--sage-light); border-color:var(--sage); display:flex; gap:2rem; align-items:center; flex-wrap:wrap;">
+  <div>
+    <div style="font-size:2rem; font-weight:800; color:var(--sage-dark);" id="totalCount">0</div>
+    <div style="font-size:0.95rem; color:var(--sage-dark);">Total Check-Ins</div>
+  </div>
+  <div>
+    <div style="font-size:2rem; font-weight:800; color:var(--sage-dark);" id="latestMood">—</div>
+    <div style="font-size:0.95rem; color:var(--sage-dark);">Latest Mood</div>
+  </div>
+  <div style="margin-left:auto;">
+    <a href="/checkin" class="btn btn-primary">+ New Check-In</a>
+  </div>
+</div>
+
+<div id="recordingsList"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const moodEmoji = { Great:"😄", Good:"🙂", Okay:"😐", Low:"😔", Unwell:"🤒" };
+
+async function loadRecordings() {
+  try {
+    const res = await fetch("/api/recordings");
+    const recordings = await res.json();
+    document.getElementById("loadingMsg").classList.add("hidden");
+
+    if (recordings.length === 0) {
+      document.getElementById("emptyMsg").classList.remove("hidden");
+      return;
+    }
+
+    // Stats
+    document.getElementById("statsBar").classList.remove("hidden");
+    document.getElementById("statsBar").style.display = "flex";
+    document.getElementById("totalCount").textContent = recordings.length;
+    const latest = recordings[0];
+    document.getElementById("latestMood").textContent =
+      (moodEmoji[latest.mood] || "") + " " + (latest.mood || "—");
+
+    // Cards
+    const list = document.getElementById("recordingsList");
+    recordings.forEach(r => {
+      const card = document.createElement("div");
+      card.className = "recording-card";
+      card.innerHTML = `
+        <div class="recording-header">
+          <div>
+            <div class="recording-date">${r.name ? r.name + " — " : ""}${r.date}</div>
+            <div class="recording-time">${r.time} &nbsp;·&nbsp; ${r.size_kb} KB</div>
+          </div>
+          ${r.mood ? `<span class="mood-badge">${moodEmoji[r.mood] || ""} ${r.mood}</span>` : ""}
+        </div>
+        ${r.note ? `<div class="recording-note">"${r.note}"</div>` : ""}
+        <div class="recording-controls">
+          <audio controls src="/static/audio/${r.filename}"></audio>
+          <button class="btn btn-danger" style="padding:0.5rem 1rem; font-size:0.95rem;" onclick="deleteRecording('${r.id}', this)">🗑️ Delete</button>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+  } catch (e) {
+    document.getElementById("loadingMsg").textContent = "⚠️ Could not load recordings. Is the app running?";
+  }
+}
+
+async function deleteRecording(id, btn) {
+  if (!confirm("Are you sure you want to delete this recording? This cannot be undone.")) return;
+  const res = await fetch(`/api/recordings/${id}`, { method: "DELETE" });
+  const data = await res.json();
+  if (data.success) {
+    btn.closest(".recording-card").remove();
+    const remaining = document.querySelectorAll(".recording-card").length;
+    document.getElementById("totalCount").textContent = remaining;
+    if (remaining === 0) {
+      document.getElementById("statsBar").classList.add("hidden");
+      document.getElementById("emptyMsg").classList.remove("hidden");
+    }
+  }
+}
+
+loadRecordings();
+</script>
+{% endblock %}

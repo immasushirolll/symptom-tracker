@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% block title %}Admin — Health Journal{% endblock %}
+
+{% block extra_css %}
+<style>
+  .admin-header {
+    background: linear-gradient(135deg, #3a3228 0%, #5a4a38 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+    border-radius: var(--radius);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .admin-header h1 { color: white; font-size: 2rem; }
+  .admin-header p { color: rgba(255,255,255,0.7); margin:0; }
+  .admin-badge {
+    background: var(--amber);
+    color: white;
+    padding: 0.4rem 1rem;
+    border-radius: 30px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .admin-table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 1rem; }
+  th {
+    background: var(--cream-dark);
+    padding: 0.85rem 1rem;
+    text-align: left;
+    font-weight: 800;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--border);
+  }
+  td {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tr:hover td { background: var(--cream); }
+  tr:last-child td { border-bottom: none; }
+  .file-link { color: var(--sage-dark); font-weight: 700; text-decoration: none; }
+  .file-link:hover { text-decoration: underline; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+  <div>
+    <h1>🔧 Admin Panel</h1>
+    <p>Manage all stored audio recordings</p>
+  </div>
+  <span class="admin-badge">Admin Only</span>
+</div>
+
+<div id="loadingMsg" class="card text-center" style="color:var(--text-muted);">
+  ⏳ Loading recordings...
+</div>
+
+<div id="emptyMsg" class="card text-center hidden" style="padding:2.5rem;">
+  <div style="font-size:3rem; margin-bottom:0.75rem;">📭</div>
+  <h2>No recordings found</h2>
+  <p class="text-muted">No check-ins have been saved yet.</p>
+</div>
+
+<!-- Stats row -->
+<div id="statsRow" class="grid-2 hidden mb-2">
+  <div class="card" style="text-align:center; background:var(--sage-light); border-color:var(--sage);">
+    <div style="font-size:2.5rem; font-weight:800; color:var(--sage-dark);" id="adminTotal">0</div>
+    <div style="color:var(--sage-dark);">Total Recordings</div>
+  </div>
+  <div class="card" style="text-align:center; background:var(--amber-light); border-color:var(--amber);">
+    <div style="font-size:2.5rem; font-weight:800; color:#8a5a10;" id="adminSize">0</div>
+    <div style="color:#8a5a10;">Total Size (KB)</div>
+  </div>
+</div>
+
+<!-- Filter / search -->
+<div id="controlsRow" class="card hidden mb-2" style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+  <input type="text" id="searchInput" placeholder="🔍  Search by name, mood, or note..." oninput="filterTable()" style="flex:1; min-width:200px;" />
+  <button class="btn btn-danger" id="deleteAllBtn" onclick="deleteAll()" style="white-space:nowrap;">🗑️ Delete All</button>
+</div>
+
+<div class="card hidden" id="tableCard">
+  <div class="admin-table-wrap">
+    <table id="adminTable">
+      <thead>
+        <tr>
+          <th>Date &amp; Time</th>
+          <th>Name</th>
+          <th>Mood</th>
+          <th>Note</th>
+          <th>Size</th>
+          <th>Audio</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="adminTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="adminAlert" class="alert"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const moodEmoji = { Great:"😄", Good:"🙂", Okay:"😐", Low:"😔", Unwell:"🤒" };
+let allRecordings = [];
+
+async function loadAdmin() {
+  try {
+    const res = await fetch("/api/recordings");
+    allRecordings = await res.json();
+    document.getElementById("loadingMsg").classList.add("hidden");
+
+    if (allRecordings.length === 0) {
+      document.getElementById("emptyMsg").classList.remove("hidden");
+      return;
+    }
+
+    document.getElementById("statsRow").classList.remove("hidden");
+    document.getElementById("statsRow").style.display = "grid";
+    document.getElementById("controlsRow").classList.remove("hidden");
+    document.getElementById("controlsRow").style.display = "flex";
+    document.getElementById("tableCard").classList.remove("hidden");
+
+    document.getElementById("adminTotal").textContent = allRecordings.length;
+    document.getElementById("adminSize").textContent =
+      allRecordings.reduce((s, r) => s + r.size_kb, 0).toFixed(1);
+
+    renderTable(allRecordings);
+  } catch (e) {
+    document.getElementById("loadingMsg").textContent = "⚠️ Could not load. Is the server running?";
+  }
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById("adminTableBody");
+  tbody.innerHTML = "";
+  data.forEach(r => {
+    const tr = document.createElement("tr");
+    tr.dataset.id = r.id;
+    tr.innerHTML = `
+      <td><strong>${r.date}</strong><br><span style="color:var(--text-muted);font-size:0.9rem;">${r.time}</span></td>
+      <td>${r.name || "—"}</td>
+      <td>${r.mood ? `${moodEmoji[r.mood] || ""} ${r.mood}` : "—"}</td>
+      <td style="max-width:200px; color:var(--text-muted); font-style:italic; font-size:0.95rem;">${r.note || "—"}</td>
+      <td>${r.size_kb} KB</td>
+      <td><audio controls src="/static/audio/${r.filename}" style="width:180px; height:36px;"></audio></td>
+      <td>
+        <a href="/static/audio/${r.filename}" download="${r.filename}" class="btn btn-outline" style="padding:0.4rem 0.8rem; font-size:0.9rem; margin-bottom:0.3rem;">⬇️ Download</a><br>
+        <button class="btn btn-danger" style="padding:0.4rem 0.8rem; font-size:0.9rem;" onclick="deleteOne('${r.id}', this)">🗑️ Delete</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function filterTable() {
+  const q = document.getElementById("searchInput").value.toLowerCase();
+  const filtered = allRecordings.filter(r =>
+    (r.name || "").toLowerCase().includes(q) ||
+    (r.mood || "").toLowerCase().includes(q) ||
+    (r.note || "").toLowerCase().includes(q) ||
+    r.date.toLowerCase().includes(q)
+  );
+  renderTable(filtered);
+}
+
+async function deleteOne(id, btn) {
+  if (!confirm("Delete this recording permanently?")) return;
+  const res = await fetch(`/api/recordings/${id}`, { method: "DELETE" });
+  const data = await res.json();
+  if (data.success) {
+    allRecordings = allRecordings.filter(r => r.id !== id);
+    btn.closest("tr").remove();
+    document.getElementById("adminTotal").textContent = allRecordings.length;
+    document.getElementById("adminSize").textContent =
+      allRecordings.reduce((s, r) => s + r.size_kb, 0).toFixed(1);
+    if (allRecordings.length === 0) location.reload();
+  }
+}
+
+async function deleteAll() {
+  if (!confirm(`Are you SURE you want to delete ALL ${allRecordings.length} recordings? This cannot be undone.`)) return;
+  for (const r of [...allRecordings]) {
+    await fetch(`/api/recordings/${r.id}`, { method: "DELETE" });
+  }
+  location.reload();
+}
+
+loadAdmin();
+</script>
+{% endblock %}

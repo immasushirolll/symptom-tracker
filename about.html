@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}About — My Health Journal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>💛 About This App</h1>
+  <p class="subtitle">A few things to know about your Health Journal.</p>
+</div>
+
+<div class="card" style="background:var(--amber-light); border-color:var(--amber);">
+  <h2 style="color:#8a5a10;">🔒 Your privacy matters</h2>
+  <p style="color:#6b4510; font-size:1.1rem;">
+    All your recordings are saved <strong>only on this computer</strong>. Nothing is uploaded to the internet. Your health information stays completely private and in your hands.
+  </p>
+</div>
+
+<div class="card mt-3">
+  <h2>🌿 What is this app for?</h2>
+  <p style="font-size:1.1rem;">
+    This Health Journal helps you build a habit of checking in with yourself each week. By talking through how you've been feeling — your sleep, energy, mood, and health — you create a personal record over time.
+  </p>
+  <p style="font-size:1.1rem;">
+    You can share these recordings with your doctor, family member, or carer, or simply listen back yourself to notice patterns and progress.
+  </p>
+</div>
+
+<div class="card mt-3">
+  <h2>🎙️ Tips for a good check-in</h2>
+  <ul style="padding-left:1.5rem; font-size:1.1rem; line-height:2.2;">
+    <li>Find a quiet spot where you won't be interrupted</li>
+    <li>Speak naturally — there's no wrong way to do it</li>
+    <li>Aim for 2–5 minutes, but any length is fine</li>
+    <li>Try to check in around the same time each week</li>
+    <li>Be honest — this is just for you!</li>
+  </ul>
+</div>
+
+<div class="card mt-3" style="background:var(--sky-light); border-color:var(--sky);">
+  <h2 style="color:#3a6e8a;">📞 Need help?</h2>
+  <p style="color:#3a5a6e; font-size:1.1rem;">
+    If you have any trouble using the app, ask a family member or trusted person to help you. This app is designed to be as simple as possible — just tap the big button and talk!
+  </p>
+</div>
+
+<div class="card mt-3" style="background: var(--sage-light); border-color:var(--sage);">
+  <h2 style="color:var(--sage-dark);">⚠️ Important note</h2>
+  <p style="color:#4a7a5a; font-size:1.1rem; margin:0;">
+    This app is a personal health <em>diary</em>, not a medical tool. It does not give medical advice or contact emergency services. If you feel unwell or are in distress, please call your doctor or emergency services.
+  </p>
+</div>
+{% endblock %}

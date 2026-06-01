@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}My Health Journal — Home{% endblock %}
+
+{% block content %}
+<div class="hero-section" style="text-align:center; padding: 1rem 0 2.5rem;">
+  <div style="font-size:4rem; margin-bottom:1rem;">🌿</div>
+  <h1 style="font-size:3rem; margin-bottom:0.75rem;">Hello, welcome back!</h1>
+  <p style="font-size:1.25rem; color:var(--text-muted); max-width:540px; margin:0 auto 2rem;">
+    This is your personal health journal. Take a few minutes each week to record how you're feeling — your voice is all you need.
+  </p>
+  <a href="/checkin" class="btn btn-primary btn-xl">
+    🎙️ Start This Week's Check-In
+  </a>
+</div>
+
+<!-- What to expect cards -->
+<div class="card" style="background: var(--amber-light); border-color: var(--amber);">
+  <h2 style="color:#8a5a10; margin-bottom:0.5rem;">💛 How it works</h2>
+  <p style="color:#6b4510; font-size:1.1rem; margin:0;">
+    Each week, tap <strong>Start Check-In</strong>, then just talk for a minute or two. Share how you've been sleeping, eating, moving, and feeling. We'll save it safely on your computer.
+  </p>
+</div>
+
+<div class="grid-2 mt-3">
+  <a href="/checkin" class="card" style="text-decoration:none; text-align:center; transition:box-shadow 0.2s; cursor:pointer;">
+    <div style="font-size:3rem; margin-bottom:0.75rem;">🎙️</div>
+    <h3>Record a Check-In</h3>
+    <p class="text-muted" style="font-size:1rem;">Speak about your week. Takes only 2–3 minutes.</p>
+  </a>
+  <a href="/history" class="card" style="text-decoration:none; text-align:center; transition:box-shadow 0.2s; cursor:pointer;">
+    <div style="font-size:3rem; margin-bottom:0.75rem;">📖</div>
+    <h3>My History</h3>
+    <p class="text-muted" style="font-size:1rem;">Listen back to your past recordings anytime.</p>
+  </a>
+</div>
+
+<!-- Tips -->
+<div class="card mt-3" style="background: var(--sky-light); border-color: var(--sky);">
+  <h3 style="color:#3a6e8a;">💡 What could you talk about?</h3>
+  <ul style="margin-top:0.75rem; padding-left:1.5rem; color:#3a5a6e; font-size:1.05rem; line-height:2;">
+    <li>How have you been <strong>sleeping</strong> this week?</li>
+    <li>What have you been <strong>eating and drinking</strong>?</li>
+    <li>How much have you been <strong>moving or walking</strong>?</li>
+    <li>How is your <strong>mood and energy</strong> level?</li>
+    <li>Any <strong>aches, pains</strong>, or health concerns?</li>
+    <li>Anything <strong>good or uplifting</strong> that happened?</li>
+  </ul>
+</div>
+{% endblock %}

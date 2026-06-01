@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}My Health Journal{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/" class="nav-brand">🌿 My Health Journal</a>
+    <ul class="nav-links">
+      <li><a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">Home</a></li>
+      <li><a href="/checkin" class="nav-link {% if request.path == '/checkin' %}active{% endif %}">Check-In</a></li>
+      <li><a href="/history" class="nav-link {% if request.path == '/history' %}active{% endif %}">My History</a></li>
+      <li><a href="/about" class="nav-link {% if request.path == '/about' %}active{% endif %}">About</a></li>
+    </ul>
+    <button class="nav-toggle" onclick="toggleMenu()" aria-label="Menu">☰</button>
+  </nav>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="/">🏠 Home</a>
+    <a href="/checkin">🎙️ Check-In</a>
+    <a href="/history">📖 My History</a>
+    <a href="/about">💛 About</a>
+  </div>
+
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <p>Made with care 💛 &nbsp;|&nbsp; <a href="/admin" style="color: var(--text-muted); font-size: 0.85rem;">Admin</a></p>
+  </footer>
+
+  <script src="/static/js/main.js"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

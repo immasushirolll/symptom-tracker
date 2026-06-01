@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% block title %}Weekly Check-In{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>🎙️ Weekly Check-In</h1>
+  <p class="subtitle">Take a moment to share how you've been this week. Your voice matters!</p>
+</div>
+
+<!-- Step 1: Your name -->
+<div class="card" id="step1">
+  <h2>Step 1 — Your Name</h2>
+  <div class="form-group">
+    <label for="nameInput">What's your name?</label>
+    <input type="text" id="nameInput" placeholder="e.g. Margaret" autocomplete="off" style="font-size:1.2rem;" />
+  </div>
+  <button class="btn btn-primary btn-lg" onclick="goToStep2()">Next →</button>
+</div>
+
+<!-- Step 2: Mood -->
+<div class="card hidden" id="step2">
+  <h2>Step 2 — How are you feeling today?</h2>
+  <p class="text-muted">Tap the face that best matches your mood right now.</p>
+  <div class="mood-grid">
+    <button class="mood-btn" data-mood="Great" onclick="selectMood(this)">
+      <span class="emoji">😄</span><span>Great</span>
+    </button>
+    <button class="mood-btn" data-mood="Good" onclick="selectMood(this)">
+      <span class="emoji">🙂</span><span>Good</span>
+    </button>
+    <button class="mood-btn" data-mood="Okay" onclick="selectMood(this)">
+      <span class="emoji">😐</span><span>Okay</span>
+    </button>
+    <button class="mood-btn" data-mood="Low" onclick="selectMood(this)">
+      <span class="emoji">😔</span><span>Low</span>
+    </button>
+    <button class="mood-btn" data-mood="Unwell" onclick="selectMood(this)">
+      <span class="emoji">🤒</span><span>Unwell</span>
+    </button>
+  </div>
+  <button class="btn btn-primary btn-lg mt-2" id="step2Next" onclick="goToStep3()" disabled>Next →</button>
+  <button class="btn btn-outline mt-2" style="margin-left:0.75rem;" onclick="showStep(1)">← Back</button>
+</div>
+
+<!-- Step 3: Record -->
+<div class="card hidden" id="step3">
+  <h2>Step 3 — Tell us about your week</h2>
+  <p style="font-size:1.1rem; color:var(--text-muted);">
+    Press the big button below to start recording, then just speak naturally. When you're done, press it again to stop.
+  </p>
+
+  <div class="record-btn-wrap">
+    <button class="record-btn" id="recordBtn" onclick="toggleRecording()">
+      <span id="recordIcon">🎙️</span>
+      <span class="label" id="recordLabel">Tap to Record</span>
+    </button>
+  </div>
+
+  <div class="waveform" id="waveform">
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+  </div>
+
+  <div class="timer" id="timerDisplay"></div>
+
+  <div id="playbackSection" class="hidden mt-3">
+    <p style="font-weight:700; color:var(--sage-dark);">✅ Recording saved! Listen back:</p>
+    <audio id="playbackAudio" controls style="width:100%; margin-top:0.5rem;"></audio>
+    <div style="display:flex; gap:1rem; margin-top:1rem; flex-wrap:wrap;">
+      <button class="btn btn-outline" onclick="reRecord()">🔄 Record Again</button>
+      <button class="btn btn-primary btn-lg" onclick="goToStep4()">Looks Good! Next →</button>
+    </div>
+  </div>
+
+  <button class="btn btn-outline mt-3" onclick="showStep(2)">← Back</button>
+</div>
+
+<!-- Step 4: Add a note -->
+<div class="card hidden" id="step4">
+  <h2>Step 4 — Add a Note <span style="font-size:1rem; font-weight:400; color:var(--text-muted)">(optional)</span></h2>
+  <p class="text-muted">Write a short note to remember anything specific from this week.</p>
+  <div class="form-group">
+    <label for="noteInput">Your note</label>
+    <textarea id="noteInput" rows="3" placeholder="e.g. Had a bit of a cold early in the week, feeling better now..."></textarea>
+  </div>
+  <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+    <button class="btn btn-outline" onclick="showStep(3)">← Back</button>
+    <button class="btn btn-amber btn-lg" onclick="saveCheckin()">💾 Save My Check-In</button>
+  </div>
+</div>
+
+<!-- Step 5: Success -->
+<div class="card hidden text-center" id="step5" style="padding: 3rem 2rem;">
+  <div style="font-size:4rem; margin-bottom:1rem;">🌟</div>
+  <h2 style="color:var(--sage-dark);">Well done, <span id="successName"></span>!</h2>
+  <p style="font-size:1.2rem; color:var(--text-muted); margin:1rem 0 2rem;">
+    Your check-in has been saved. You're doing a wonderful job taking care of yourself.
+  </p>
+  <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+    <a href="/history" class="btn btn-primary btn-lg">📖 See My History</a>
+    <a href="/" class="btn btn-outline btn-lg">🏠 Go Home</a>
+  </div>
+</div>
+
+<div id="saveAlert" class="alert"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let mediaRecorder = null;
+let audioChunks = [];
+let timerInterval = null;
+let seconds = 0;
+let recordingBlob = null;
+let selectedMood = "";
+
+function showStep(n) {
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById(`step${i}`).classList.add("hidden");
+  }
+  document.getElementById(`step${n}`).classList.remove("hidden");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function goToStep2() {
+  const name = document.getElementById("nameInput").value.trim();
+  if (!name) {
+    document.getElementById("nameInput").focus();
+    document.getElementById("nameInput").style.borderColor = "var(--rose)";
+    return;
+  }
+  document.getElementById("nameInput").style.borderColor = "";
+  showStep(2);
+}
+
+function selectMood(btn) {
+  document.querySelectorAll(".mood-btn").forEach(b => b.classList.remove("selected"));
+  btn.classList.add("selected");
+  selectedMood = btn.dataset.mood;
+  document.getElementById("step2Next").disabled = false;
+}
+
+function goToStep3() {
+  if (!selectedMood) return;
+  showStep(3);
+}
+
+function goToStep4() {
+  showStep(4);
+}
+
+async function toggleRecording() {
+  if (mediaRecorder && mediaRecorder.state === "recording") {
+    stopRecording();
+  } else {
+    await startRecording();
+  }
+}
+
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks = [];
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.addEventListener("dataavailable", e => audioChunks.push(e.data));
+    mediaRecorder.addEventListener("stop", () => {
+      recordingBlob = new Blob(audioChunks, { type: "audio/webm" });
+      const url = URL.createObjectURL(recordingBlob);
+      document.getElementById("playbackAudio").src = url;
+      document.getElementById("playbackSection").classList.remove("hidden");
+      stream.getTracks().forEach(t => t.stop());
+    });
+    mediaRecorder.start();
+
+    // UI
+    const btn = document.getElementById("recordBtn");
+    btn.classList.add("recording");
+    document.getElementById("recordIcon").textContent = "⏹️";
+    document.getElementById("recordLabel").textContent = "Tap to Stop";
+    document.getElementById("waveform").classList.add("active");
+    document.getElementById("playbackSection").classList.add("hidden");
+
+    seconds = 0;
+    timerInterval = setInterval(() => {
+      seconds++;
+      document.getElementById("timerDisplay").textContent = formatTime(seconds);
+    }, 1000);
+
+  } catch (err) {
+    showAlert("saveAlert", "Could not access microphone. Please check your browser permissions.", "error");
+  }
+}
+
+function stopRecording() {
+  if (mediaRecorder) mediaRecorder.stop();
+  clearInterval(timerInterval);
+  const btn = document.getElementById("recordBtn");
+  btn.classList.remove("recording");
+  document.getElementById("recordIcon").textContent = "🎙️";
+  document.getElementById("recordLabel").textContent = "Tap to Record";
+  document.getElementById("waveform").classList.remove("active");
+}
+
+function reRecord() {
+  recordingBlob = null;
+  document.getElementById("playbackSection").classList.add("hidden");
+  document.getElementById("timerDisplay").textContent = "";
+}
+
+async function saveCheckin() {
+  if (!recordingBlob) {
+    showAlert("saveAlert", "Please record your check-in first (Step 3).", "error");
+    showStep(3);
+    return;
+  }
+  const formData = new FormData();
+  formData.append("audio", recordingBlob, "checkin.webm");
+  formData.append("name", document.getElementById("nameInput").value.trim());
+  formData.append("mood", selectedMood);
+  formData.append("note", document.getElementById("noteInput").value.trim());
+
+  try {
+    const res = await fetch("/api/save-recording", { method: "POST", body: formData });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById("successName").textContent = data.entry.name;
+      showStep(5);
+    } else {
+      showAlert("saveAlert", "Something went wrong saving. Please try again.", "error");
+    }
+  } catch (e) {
+    showAlert("saveAlert", "Could not save — please try again.", "error");
+  }
+}
+
+function showAlert(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = `alert alert-${type} show`;
+  setTimeout(() => el.classList.remove("show"), 5000);
+}
+</script>
+{% endblock %}
