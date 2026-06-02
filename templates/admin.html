@@ -71,8 +71,8 @@
   <p class="text-muted">No check-ins have been saved yet.</p>
 </div>
 
-<!-- Stats row -->
-<div id="statsRow" class="grid-2 hidden mb-2">
+<!-- Dashboard -->
+<div id="dashboard" class="grid-2 hidden mb-2">
   <div class="card" style="text-align:center; background:var(--sage-light); border-color:var(--sage);">
     <div style="font-size:2.5rem; font-weight:800; color:var(--sage-dark);" id="adminTotal">0</div>
     <div style="color:var(--sage-dark);">Total Recordings</div>
@@ -127,8 +127,8 @@ async function loadAdmin() {
       return;
     }
 
-    document.getElementById("statsRow").classList.remove("hidden");
-    document.getElementById("statsRow").style.display = "grid";
+    document.getElementById("dashboard").classList.remove("hidden");
+    document.getElementById("dashboard").style.display = "grid";
     document.getElementById("controlsRow").classList.remove("hidden");
     document.getElementById("controlsRow").style.display = "flex";
     document.getElementById("tableCard").classList.remove("hidden");
@@ -155,6 +155,7 @@ function renderTable(data) {
       <td>${r.mood ? `${moodEmoji[r.mood] || ""} ${r.mood}` : "—"}</td>
       <td style="max-width:200px; color:var(--text-muted); font-style:italic; font-size:0.95rem;">${r.note || "—"}</td>
       <td>${r.size_kb} KB</td>
+      // insert column for text extracted from audio here
       <td><audio controls src="/static/audio/${r.filename}" style="width:180px; height:36px;"></audio></td>
       <td>
         <a href="/static/audio/${r.filename}" download="${r.filename}" class="btn btn-outline" style="padding:0.4rem 0.8rem; font-size:0.9rem; margin-bottom:0.3rem;">⬇️ Download</a><br>
