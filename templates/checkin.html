@@ -214,6 +214,7 @@ function reRecord() {
 }
 
 async function saveCheckin() {
+  // Saves check-in by sending audio blob and metadata to local storage
   if (!recordingBlob) {
     showAlert("saveAlert", "Please record your check-in first (Step 3).", "error");
     showStep(3);
