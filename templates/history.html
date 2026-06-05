@@ -32,12 +32,37 @@
   </div>
 </div>
 
+<!-- Symptom Summary -->
+<div class="card mt-3 mb-2" id="symptomSummary">
+  <h2>🩺 Symptom Summary</h2>
+  <p class="text-muted" style="margin-bottom:1.25rem; font-size:1rem;">Based on your recent check-ins</p>
+  <div id="symptomProse" style="font-family: var(--font-display); font-size:1.15rem; line-height:1.9; color: var(--text);"></div>
+</div>
+
 <div id="recordingsList"></div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
 const moodEmoji = { Great:"😄", Good:"🙂", Okay:"😐", Low:"😔", Unwell:"🤒" };
+
+const dummySummary = `Over the past several weeks, the patient has reported persistent fatigue occurring most days, which they describe as a heavy tiredness that does not fully resolve with sleep. Sleep itself has been a recurring concern — they have mentioned difficulty falling asleep and waking frequently during the night on at least five separate occasions, with no clear improvement over time.
+
+Lower back pain has come up three times, described as a dull ache that is worse in the mornings and tends to ease as the day goes on. The patient noted it does not radiate down the legs. Mild headaches were mentioned twice, both times in the context of feeling generally run down, and appeared to resolve on their own within a day.
+
+Appetite has been reduced on two occasions, though the patient did not report any associated weight loss or nausea. Overall mood has been variable — mostly good to okay — with one week where they described feeling quite low, which they attributed to a difficult few days at home. No chest pain, breathlessness, or dizziness has been reported.`;
+
+async function renderSummary() {
+  try {
+    const res = await fetch("/api/summary");
+    document.getElementById("symptomProse").textContent = await res.text();
+  } catch (e) {
+    document.getElementById("symptomProse").textContent = "Could not load symptom summary. error: " + e.message + "\n\nHere's an example of what the summary will look like once it's working:\n\n" + dummySummary;
+  }
+}
+
+renderSummary();
 
 async function loadRecordings() {
   try {

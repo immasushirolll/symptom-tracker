@@ -3,6 +3,12 @@ import os
 import json
 from datetime import datetime
 import subprocess
+from dotenv import load_dotenv
+from google import genai
+from google.genai import types
+load_dotenv()
+gemini_client = genai.Client(api_key=os.getenv("GENAI_API_KEY"))
+
 
 app = Flask(__name__)
 
@@ -107,7 +113,7 @@ def save_recording():
         "-otxt"
     ])
 
-    print(f"\Success=0, Fail=1 for {filename}:{text_output}\n")
+    print(f"Success=0, Fail=1 for {filename}:{text_output}\n")
 
     # save_audio_data(text_output)
 
@@ -137,6 +143,29 @@ def delete_recording(recording_id):
     save_metadata(metadata)
     return jsonify({"success": True})
 
+@app.route("/api/summary")
+def get_aisummary(client=gemini_client):
+    """Return a summary of the user's symptoms in the last month."""
+
+    # get input_date_time.txt files from /static/audio, get only those from the last month, and combine into a single prompt string
+    transcript_files = [f for f in os.listdir(AUDIO_DIR) if (f.endswith("wav.txt") and f.startswith("input_"))]
+    prompt = """Create a summary of this patient's symptoms based on the following transcripts that's useful for 
+        a doctors appointment."""
+    for filename in transcript_files:
+        filepath = os.path.join(AUDIO_DIR, filename)
+        with open(filepath, "r") as f:
+            content = f.read()
+            prompt += content + "\n"
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
+    )
+
+    with open(f"{AUDIO_DIR}/response.txt", "w") as f:
+        f.write(response.text)
+        
+    print(response.text)
+    return response.text
 
 @app.route("/static/audio/<path:filename>")
 def serve_audio(filename):
