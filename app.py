@@ -154,13 +154,13 @@ def delete_recording(recording_id):
 def get_aisummary(client=gemini_client):
     """Return a summary of the user's symptoms in the last month."""
 
-    # get input_date_time.txt files from /static/audio, get only those from the last month, and combine into a single prompt string
-    transcript_files = [f for f in os.listdir(AUDIO_DIR) if (f.endswith("wav.txt") and f.startswith("input_"))]
+    # get input_date_time.txt files from /static/audio/txt/, get only those from the last month, and combine into a single prompt string
+    transcript_files = [f for f in os.listdir(os.path.join(AUDIO_DIR, "txt")) if (f.endswith("wav.txt") and f.startswith("input_"))]
     prompt = """Create a summary of this patient's symptoms based on the following transcripts that's useful for 
         a doctors appointment. Be concise, use a tone as if you are speaking to the patient. Use simple text formatting.
         Start with: Based on the recent check-ins,....\n\n"""
     for filename in transcript_files:
-        filepath = os.path.join(AUDIO_DIR, filename)
+        filepath = os.path.join(AUDIO_DIR, f"txt/{filename}")
         with open(filepath, "r") as f:
             content = f.read()
             prompt += content + "\n"
