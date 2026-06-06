@@ -6,6 +6,7 @@ import subprocess
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+import whisper
 load_dotenv()
 gemini_client = genai.Client(api_key=os.getenv("GENAI_API_KEY"))
 
@@ -101,7 +102,7 @@ def save_recording():
     }
     metadata.append(entry)
     save_metadata(metadata)
-
+    
     conversion_output = subprocess.call([
         "ffmpeg", "-i", f"/home/immasushiroll/Windows/Users/jane8/repos/symptom-tracker/static/audio/{filename}", "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", f"/home/immasushiroll/Windows/Users/jane8/repos/symptom-tracker/static/audio/{wav_filename}"
     ])
@@ -113,7 +114,13 @@ def save_recording():
         "-otxt"
     ])
 
-    print(f"Success=0, Fail=1 for {filename}:{text_output}\n")
+    transcript_output = subprocess.call([
+        "whisper", f"/home/immasushiroll/Windows/Users/jane8/repos/symptom-tracker/static/audio/{filename}", "--model", "medium",
+        "--output_format", "txt", "--language", "Mandarin",
+        "--output_dir", f"/home/immasushiroll/Windows/Users/jane8/repos/symptom-tracker/static/audio/txt/"
+    ])
+
+    print(f"Success=0, Fail=1 for {filename}:{transcript_output}\n")
 
     # save_audio_data(text_output)
 

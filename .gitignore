@@ -1,2 +1,7 @@
+# folders
 audio/
+txt/
+
+# files
 .env
+whispertest.py
