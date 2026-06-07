@@ -84,7 +84,6 @@ def save_recording():
 
     timestamp = datetime.now()
     filename = f"input_{timestamp.strftime('%Y%m%d_%H%M%S')}.webm"
-    wav_filename = filename.replace(".webm", ".wav")
     filepath = os.path.join(AUDIO_DIR, filename)
     audio_file.save(filepath)
 
@@ -103,26 +102,14 @@ def save_recording():
     metadata.append(entry)
     save_metadata(metadata)
     
-    conversion_output = subprocess.call([
-        "ffmpeg", "-i", f"/home/immasushiroll/Windows/Users/jane8/repos/symptom-tracker/static/audio/{filename}", "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", f"/home/immasushiroll/Windows/Users/jane8/repos/symptom-tracker/static/audio/{wav_filename}"
-    ])
-
-    text_output = subprocess.call([
-        "/home/immasushiroll/Windows/Users/jane8/repos/whisper.cpp/build/bin/whisper-cli",
-        "-m", "/home/immasushiroll/Windows/Users/jane8/repos/whisper.cpp/models/ggml-base.en.bin",
-        "-f", f"/home/immasushiroll/Windows/Users/jane8/repos/symptom-tracker/static/audio/{wav_filename}",
-        "-otxt"
-    ])
 
     transcript_output = subprocess.call([
-        "whisper", f"/home/immasushiroll/Windows/Users/jane8/repos/symptom-tracker/static/audio/{filename}", "--model", "medium",
+        "whisper", os.path.join(AUDIO_DIR, filename), "--model", "medium", 
         "--output_format", "txt", "--language", "Mandarin",
-        "--output_dir", f"/home/immasushiroll/Windows/Users/jane8/repos/symptom-tracker/static/audio/txt/"
+        "--output_dir", os.path.join(AUDIO_DIR, "txt")
     ])
 
     print(f"Success=0, Fail=1 for {filename}:{transcript_output}\n")
-
-    # save_audio_data(text_output)
 
     return jsonify({"success": True, "entry": entry})
 
@@ -145,6 +132,10 @@ def delete_recording(recording_id):
     filepath = os.path.join(AUDIO_DIR, entry["filename"])
     if os.path.exists(filepath):
         os.remove(filepath)
+
+    transcript_path = os.path.join(AUDIO_DIR, "txt", entry["filename"].replace(".webm", ".txt"))
+    if os.path.exists(transcript_path):
+        os.remove(transcript_path)
 
     metadata = [e for e in metadata if e["id"] != recording_id]
     save_metadata(metadata)
