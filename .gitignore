@@ -1,6 +1,8 @@
 # folders
 audio/
 txt/
+build/
 
 # files
 .env
+app.spec

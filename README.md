@@ -29,35 +29,39 @@ health-tracker/
         ├── metadata.json   ← Auto-created: recording index
         └── *.webm          ← Auto-created: your audio files
 ```
+---
+## 🚀 Setup
+
+### Option A — Easy (Windows .exe)
+1. **Download `app.exe`** from the repository (https://github.com/immasushirolll/symptom-tracker/dist/app.exe) 
+2. **Install FFmpeg** — `winget install ffmpeg` in your terminal
+3. **Add your API key** — create a `.env` file in the same folder as `app.exe`:
+```
+   GENAI_API_KEY=your_key_here
+```
+1. Double-click `app.exe` and go to `http://localhost:5000`
 
 ---
 
-## 🚀 Setup (one-time)
-
-### Requirements
-- Python 3.8 or newer
-- A modern web browser (Chrome, Edge, Firefox, Safari)
-
-### Steps
-
-1. **Open a terminal** in VS Code (`Terminal → New Terminal`)
-
-2. **Install dependencies:**
-   ```bash
+### Option B — Run from source
+1. **Install Python 3.9+** — [python.org](https://python.org)
+2. **Install FFmpeg**
+   - Windows: `winget install ffmpeg`
+   - Mac: `brew install ffmpeg`
+3. **Clone and install**
+```bash
+   git clone https://github.com/you/your-repo
+   cd your-repo
    pip install -r requirements.txt
-   ```
-
-3. **Run the app:**
-   ```bash
+```
+4. **Add your API key**
+   - Copy `.env.example` to `.env`
+   - Fill in your `GOOGLE_API_KEY`
+5. **Run**
+```bash
    python app.py
-   ```
-
-4. **Open your browser** and go to:
-   ```
-   http://localhost:5000
-   ```
-
-That's it! The app will create the `static/audio/` folder automatically.
+```
+6. Go to `http://localhost:5000`
 
 ---
 

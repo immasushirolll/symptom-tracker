@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 import whisper
+import threading, webbrowser
 load_dotenv()
 gemini_client = genai.Client(api_key=os.getenv("GENAI_API_KEY"))
 
@@ -101,7 +102,7 @@ def save_recording():
     }
     metadata.append(entry)
     save_metadata(metadata)
-    
+
 
     transcript_output = subprocess.call([
         "whisper", os.path.join(AUDIO_DIR, filename), "--model", "medium", 
@@ -172,6 +173,7 @@ def serve_audio(filename):
 
 
 if __name__ == "__main__":
+    threading.Timer(1.5, lambda: webbrowser.open("http://localhost:5000")).start()
     print("\n🌿 Health Tracker is running!")
     print("   Open your browser to: http://localhost:5000\n")
     app.run(debug=True, port=5000)
